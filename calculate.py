@@ -13,13 +13,13 @@ import click
 @click.option("-E", type=click.FloatRange(0, min_open=True), default=206000.0, help="Elastizitätsmodul")
 @click.option("--nu", type=click.FloatRange(0, 0.5, max_open=True), default=0.3, help="Poissonzahl")
 def cli(outer, inner, thickness, height, s, e, nu):
-    # Errechnet die Federnkraft einer Tellerfeder der Gruppe 1 nach DIN 2093
-    #
-    # Formeln aus http://www.christianbauer.com/de/img-cust/Katalog_D_2TheoriePraxis.pdf
-    # Bzw Haberhauer & Bodenstein, Maschinenelemente, 17. Auflage.
-    #
-    # Eingabe sind D_e, D_i, l_0, t (laut DIN 2093)
-    # Achtung: Manchmal sind die Namen dazu auch D_e = d_2, D_i = d_1, l_0 = h, t = s
+    """
+    Errechnet die Federkraft einer Tellerfeder der Gruppe 1 nach DIN 2093
+
+    Formeln aus Haberhauer & Bodenstein, Maschinenelemente, 17. Auflage.
+    Eingabe sind D_e, D_i, l_0, t (laut DIN 2093)
+    Achtung: Manchmal sind die Namen dazu auch D_e = d_2, D_i = d_1, l_0 = h, t = s
+    """
 
     # Außendurchmesser
     D_e = outer  # mm
@@ -76,10 +76,19 @@ def cli(outer, inner, thickness, height, s, e, nu):
     # 0.75 ist die obere Grenze lt. DIN 2093
     s_max = 0.75 * h_0
     # Reihencharacterisierung:
-    # Reihe 1: h_0 / t = 0.4
-    # Reihe 2: h_0 / t = 0.75
-    # Reihe 3: h_0 / t = 1.3
-    print(f"{D_e = :.1f} mm, {D_i = :.1f} mm, {t = :.2f} mm, {l_0 = :.2f} mm, {h_0 = :.2f} mm, {h_0 / t = :.2f}")
+    # Reihe A: h_0 / t = 0.4
+    # Reihe B: h_0 / t = 0.75
+    # Reihe C: h_0 / t = 1.3
+    print(f"{D_e = :.1f} mm, {D_i = :.1f} mm, {t = :.2f} mm, {l_0 = :.2f} mm, {h_0 = :.2f} mm")
+    reihe = h_0 / t
+    if np.isclose(reihe, 0.4):
+        print(f"  Reihe A ({h_0 / t = :.2f})")
+    elif np.isclose(reihe, 0.75):
+        print(f"  Reihe B ({h_0 / t = :.2f})")
+    elif np.isclose(reihe, 1.3):
+        print(f"  Reihe C ({h_0 / t = :.2f})")
+    else:
+        print(f"  WARNUNG: Feder entspricht keiner Reihe der Norm DIN 2093! {h_0 / t = :.2f}")
     print(f"Höhe der Feder undeformiert: {l_0=}")
     print(f"Höhe der Feder deformiert: l_0 - s_max = {l_0:.2f} - {s_max:.2f} = {l_0 - s_max:.2f}")
     print()
